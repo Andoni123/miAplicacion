@@ -1,0 +1,395 @@
+@page
+@model GestionProductosModel
+@{
+    ViewData["Title"] = "Gestión de Productos";
+}
+
+<div class="dashboard-container">
+    <!-- Header de la página -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <h2><i class="fas fa-box-open"></i> Gestión de Inventario</h2>
+            <div class="header-actions">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar productos..." class="search-input">
+                </div>
+                <button class="btn btn-primary add-product-btn">
+                    <i class="fas fa-plus"></i> Nuevo Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <i class="fas fa-cubes"></i>
+            <div class="stat-info">
+                <h3>Total Productos</h3>
+                <p>@Model.Productos.Count</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-tags"></i>
+            <div class="stat-info">
+                <h3>En Oferta</h3>
+                <p>@Model.Productos.Count(p => p.TipoOferta != "Sin oferta")</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="stat-info">
+                <h3>Bajo Stock</h3>
+                <p>@Model.Productos.Count(p => p.Estado == "Bajo Stock")</p>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.MensajeExito))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @Model.MensajeExito
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form method="post" id="productForm">
+        <div class="table-container">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-image"></i> Producto</th>
+                        <th><i class="fas fa-tag"></i> Oferta</th>
+                        <th><i class="fas fa-dollar-sign"></i> Precio</th>
+                        <th><i class="fas fa-boxes"></i> Stock</th>
+                        <th><i class="fas fa-folder"></i> Categoría</th>
+                        <th><i class="fas fa-chart-line"></i> Estado</th>
+                        <th><i class="fas fa-cog"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Productos.Count; i++)
+                    {
+                        <tr class="product-row">
+                            <td class="product-info">
+                                <input type="hidden" asp-for="Productos[i].Id" />
+                                <input type="hidden" asp-for="Productos[i].Nombre" />
+                                <img src="@Model.Productos[i].ImagenUrl" alt="@Model.Productos[i].Nombre" class="product-image" />
+                                <span class="product-name">@Model.Productos[i].Nombre</span>
+                            </td>
+                            <td>
+                                <input type="hidden" asp-for="Productos[i].TipoOferta" />
+                                <span class="badge @(Model.Productos[i].TipoOferta == "Sin oferta" ? "bg-secondary" : "bg-primary")">
+                                    @Model.Productos[i].TipoOferta
+                                </span>
+                            </td>
+                            <td>
+                                <span class="precio">€@Model.Productos[i].Precio.ToString("N2")</span>
+                            </td>
+                            <td>
+                                <div class="quantity-control">
+                                    <button type="button" class="btn btn-outline-primary btn-sm quantity-btn" onclick="decrementQuantity(@i)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input asp-for="Productos[i].Cantidad" class="form-control cantidad-input" type="number" min="0" />
+                                    <button type="button" class="btn btn-outline-primary btn-sm quantity-btn" onclick="incrementQuantity(@i)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="categoria">@Model.Productos[i].Categoria</span>
+                            </td>
+                            <td>
+                                <span class="estado-badge @(Model.Productos[i].Estado == "En Stock" ? "estado-success" : "estado-warning")">
+                                    @Model.Productos[i].Estado
+                                </span>
+                            </td>
+                            <td>
+                                <div class="action-buttons">
+                                    <form method="post" asp-page-handler="AgregarAlCarrito" 
+                                          asp-route-productoId="@Model.Productos[i].Id" 
+                                          asp-route-cantidad="@Model.Productos[i].Cantidad">
+                                        <button type="submit" class="btn btn-success btn-sm action-btn" title="Agregar al carrito">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-info btn-sm action-btn" title="Ver detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<style>
+    .dashboard-container {
+        background: linear-gradient(145deg, #1a1a1a, #2c3e50);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: -1rem;
+    }
+
+    .dashboard-header {
+        margin-bottom: 2rem;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .header-content h2 {
+        color: var(--text-color);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .search-box {
+        position: relative;
+        width: 300px;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border-radius: 30px;
+        border: 1px solid var(--accent-color);
+        background: rgba(52, 152, 219, 0.1);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        background: rgba(52, 152, 219, 0.2);
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, #2c3e50, #34495e);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
+    }
+
+    .stat-card i {
+        font-size: 2rem;
+        color: var(--accent-color);
+    }
+
+    .stat-info h3 {
+        color: var(--text-color);
+        font-size: 1rem;
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    .stat-info p {
+        color: var(--text-color);
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .table-container {
+        background: linear-gradient(145deg, #2c3e50, #34495e);
+        border-radius: 15px;
+        padding: 1rem;
+        overflow: hidden;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table thead th {
+        background: linear-gradient(to right, #2c3e50, #3498db);
+        color: var(--text-color);
+        font-weight: 600;
+        border: none;
+        padding: 1rem;
+    }
+
+    .table thead th i {
+        margin-right: 0.5rem;
+    }
+
+    .product-row {
+        transition: all 0.3s ease;
+    }
+
+    .product-row:hover {
+        background: rgba(52, 152, 219, 0.1);
+    }
+
+    .product-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .product-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        object-fit: cover;
+    }
+
+    .product-name {
+        font-weight: 500;
+        color: var(--text-color);
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .cantidad-input {
+        width: 80px !important;
+        text-align: center;
+        background: linear-gradient(145deg, #34495e, #2c3e50) !important;
+        border: 1px solid var(--accent-color) !important;
+        color: var(--text-color) !important;
+    }
+
+    .quantity-btn {
+        padding: 0.25rem 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .estado-badge {
+        padding: 0.5em 1em;
+        border-radius: 30px;
+        font-size: 0.85em;
+        font-weight: 500;
+    }
+
+    .estado-success {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+
+    .estado-warning {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f1c40f;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .add-product-btn {
+        background: linear-gradient(45deg, #27ae60, #2ecc71);
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .add-product-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+    }
+
+    .alert {
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert i {
+        font-size: 1.2rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function incrementQuantity(index) {
+            const input = document.querySelector(`input[name="Productos[${index}].Cantidad"]`);
+            input.value = parseInt(input.value) + 1;
+        }
+
+        function decrementQuantity(index) {
+            const input = document.querySelector(`input[name="Productos[${index}].Cantidad"]`);
+            const newValue = parseInt(input.value) - 1;
+            if (newValue >= 0) {
+                input.value = newValue;
+            }
+        }
+
+        // Búsqueda en tiempo real
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.product-row').forEach(row => {
+                const productName = row.querySelector('.product-name').textContent.toLowerCase();
+                row.style.display = productName.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+} 

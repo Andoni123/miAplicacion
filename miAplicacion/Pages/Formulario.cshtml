@@ -1,0 +1,44 @@
+@page
+@model FormularioModel
+@{
+    ViewData["Title"] = "Formulario Web";
+}
+
+<div class="form-container">
+    <h2>Mi Formulario Web</h2>
+
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Nombre" class="form-label">Nombre:</label>
+            <input asp-for="Nombre" class="form-control" />
+            <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email:</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Mensaje" class="form-label">Mensaje:</label>
+            <textarea asp-for="Mensaje" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Mensaje" class="text-danger"></span>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Enviar</button>
+        </div>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ResultadoMensaje))
+    {
+        <div class="alert alert-success mt-4" role="alert">
+            @Model.ResultadoMensaje
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} 

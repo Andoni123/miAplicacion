@@ -1,0 +1,44 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="hero-section">
+    <div class="container">
+        <h1>Bienvenido a miTienda</h1>
+        <p class="lead">Descubre nuestra selección de productos exclusivos</p>
+        <div class="hero-buttons">
+            <a href="/Productos" class="btn btn-primary">Ver Productos</a>
+            <a href="/Formulario" class="btn btn-outline-light">Contáctanos</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(52, 152, 219, 0.7)),
+                url('/images/hero-bg.jpg') center/cover;
+    min-height: 500px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding: 4rem 0;
+}
+
+.hero-section h1 {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero-buttons {
+    margin-top: 2rem;
+}
+
+.hero-buttons .btn {
+    margin: 0.5rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+</style>
