@@ -720,3 +720,45 @@ h2:after {
         margin: 1rem;
     }
 }
+
+/* Botón de inicio de sesión */
+.login-btn {
+    border: 2px solid #4ba3fc !important;
+    color: #4ba3fc !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    background: rgba(75, 163, 252, 0.1);
+}
+
+.login-btn:hover {
+    background: #4ba3fc;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(75, 163, 252, 0.3);
+}
+
+/* Botón de registro */
+.register-btn {
+    border: 2px solid #7c5dfa !important;
+    color: #7c5dfa !important;
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    background: rgba(124, 93, 250, 0.1);
+}
+
+.register-btn:hover {
+    background: #7c5dfa;
+    color: #fff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(124, 93, 250, 0.3);
+}
+
+/* Espaciado entre iconos y texto */
+.login-btn i,
+.register-btn i {
+    margin-right: 0.5rem;
+}
