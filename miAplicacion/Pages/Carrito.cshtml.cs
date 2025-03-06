@@ -12,11 +12,41 @@ namespace miAplicacion.Pages
     public class CarritoModel : PageModel
     {
         public List<CarritoItem> ItemsCarrito { get; set; }
-        public decimal Total => ItemsCarrito?.Sum(i => i.Total) ?? 0;
+        public decimal Total { get; set; }
 
         public void OnGet()
         {
-            ItemsCarrito = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
+            // Simulamos items en el carrito
+            ItemsCarrito = new List<CarritoItem>
+            {
+                new CarritoItem 
+                {
+                    Id = 1,
+                    Nombre = "MacBook Pro 2023",
+                    Precio = 1299.99M,
+                    Cantidad = 1,
+                    ImagenUrl = "/images/macbook.jpg"
+                },
+                new CarritoItem 
+                {
+                    Id = 2,
+                    Nombre = "iPhone 14 Pro",
+                    Precio = 999.99M,
+                    Cantidad = 2,
+                    ImagenUrl = "/images/iphone.jpg"
+                },
+                new CarritoItem 
+                {
+                    Id = 3,
+                    Nombre = "AirPods Pro",
+                    Precio = 249.99M,
+                    Cantidad = 1,
+                    ImagenUrl = "/images/airpods.jpg"
+                }
+            };
+
+            // Calcular el total
+            Total = ItemsCarrito.Sum(item => item.Precio * item.Cantidad);
         }
 
         public IActionResult OnPostEliminar(int id)
@@ -30,5 +60,15 @@ namespace miAplicacion.Pages
             }
             return RedirectToPage();
         }
+    }
+
+    public class CarritoItem
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public decimal Precio { get; set; }
+        public int Cantidad { get; set; }
+        public string ImagenUrl { get; set; }
+        public string TipoOferta { get; set; }
     }
 } 

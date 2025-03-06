@@ -4,94 +4,151 @@
     ViewData["Title"] = "Carrito de Compras";
 }
 
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <div class="header-content">
-            <h2><i class="fas fa-shopping-cart"></i> Carrito de Compras</h2>
-        </div>
-    </div>
-
-    @if (Model.ItemsCarrito.Any())
-    {
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Oferta</th>
-                        <th>Total</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-shopping-cart"></i> Mi Carrito</h3>
+                </div>
+                <div class="card-body">
                     @foreach (var item in Model.ItemsCarrito)
                     {
-                        <tr class="product-row">
-                            <td>@item.Nombre</td>
-                            <td>€@item.Precio.ToString("N2")</td>
-                            <td>@item.Cantidad</td>
-                            <td>
-                                <span class="badge">@item.TipoOferta</span>
-                            </td>
-                            <td>€@item.Total.ToString("N2")</td>
-                            <td>
-                                <form method="post" asp-page-handler="Eliminar" asp-route-id="@item.Id">
-                                    <button type="submit" class="btn btn-danger btn-sm action-btn">
+                        <div class="cart-item mb-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="@item.ImagenUrl" class="img-fluid rounded" alt="@item.Nombre">
+                                </div>
+                                <div class="col-md-4">
+                                    <h5 class="product-name">@item.Nombre</h5>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="quantity">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="updateQuantity(@item.Id, -1)">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="mx-2">@item.Cantidad</span>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="updateQuantity(@item.Id, 1)">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="price">$@((item.Precio * item.Cantidad).ToString("N2"))</span>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-danger btn-sm" onclick="removeItem(@item.Id)">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
+                                </div>
+                            </div>
+                        </div>
                     }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4" class="text-end fw-bold">Total:</td>
-                        <td colspan="2" class="fw-bold">€@Model.Total.ToString("N2")</td>
-                    </tr>
-                </tfoot>
-            </table>
+                </div>
+            </div>
         </div>
-
-        <div class="d-flex justify-content-end mt-4">
-            <a href="#" class="btn btn-success">
-                <i class="fas fa-check"></i> Proceder al Pago
-            </a>
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Resumen del Pedido</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Subtotal</span>
+                        <span>$@Model.Total.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Envío</span>
+                        <span>Gratis</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        <strong>$@Model.Total.ToString("N2")</strong>
+                    </div>
+                    <button class="btn btn-primary w-100">
+                        <i class="fas fa-lock"></i> Proceder al Pago
+                    </button>
+                </div>
+            </div>
         </div>
-    }
-    else
-    {
-        <div class="empty-cart">
-            <i class="fas fa-shopping-cart fa-4x"></i>
-            <h3>Tu carrito está vacío</h3>
-            <p>¡Agrega algunos productos!</p>
-            <a asp-page="/GestionProductos" class="btn btn-primary">
-                <i class="fas fa-shopping-bag"></i> Ir a Productos
-            </a>
-        </div>
-    }
+    </div>
 </div>
 
 <style>
-    .empty-cart {
-        text-align: center;
-        padding: 3rem;
-        color: var(--text-color);
-    }
+.cart-item {
+    background: rgba(43, 62, 80, 0.95);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(75, 163, 252, 0.2);
+}
 
-    .empty-cart i {
-        color: var(--accent-color);
-        margin-bottom: 1rem;
-    }
+.cart-item img {
+    max-width: 100px;
+    height: auto;
+}
 
-    .empty-cart h3 {
-        margin-bottom: 0.5rem;
-    }
+.product-name {
+    color: #4ba3fc;
+    margin-bottom: 0.5rem;
+}
 
-    .empty-cart p {
-        margin-bottom: 1.5rem;
-        opacity: 0.8;
-    }
-</style> 
+.quantity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.price {
+    color: #4ba3fc;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.btn-outline-primary {
+    color: #4ba3fc;
+    border-color: #4ba3fc;
+}
+
+.btn-outline-primary:hover {
+    background-color: #4ba3fc;
+    color: white;
+}
+
+.card {
+    background: rgba(43, 62, 80, 0.95);
+    border: 1px solid rgba(75, 163, 252, 0.2);
+}
+
+.card-header {
+    background: rgba(75, 163, 252, 0.1);
+    border-bottom: 1px solid rgba(75, 163, 252, 0.2);
+    color: #4ba3fc;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4ba3fc, #3d8fe0);
+    border: none;
+    padding: 0.75rem;
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(75, 163, 252, 0.3);
+}
+</style>
+
+@section Scripts {
+    <script>
+        function updateQuantity(itemId, change) {
+            // Aquí iría la lógica para actualizar la cantidad
+            console.log(`Actualizar cantidad del item ${itemId} en ${change}`);
+        }
+
+        function removeItem(itemId) {
+            // Aquí iría la lógica para eliminar el item
+            console.log(`Eliminar item ${itemId}`);
+        }
+    </script>
+} 
