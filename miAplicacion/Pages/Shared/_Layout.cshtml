@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/miAplicacion.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -55,8 +58,8 @@
                             }
                         </a>
                     </li>
-                    <li class="nav-item ms-2">
-                        <a class="btn btn-outline-light login-btn" asp-page="/Login">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Login">
                             <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                         </a>
                     </li>
@@ -308,18 +311,29 @@
         display: flex;
         gap: 1rem;
         margin-top: 1.5rem;
-    }
 
-    .red-social {
-        color: #fff;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
     }
+.redes-sociales i {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 1.3rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .red-social:hover {
-        color: #DAA520;
-        transform: translateY(-3px);
-    }
+.redes-sociales i:hover {
+    color: #2c3e50 !important;
+    background: #DAA520;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 5px 15px rgba(218, 165, 32, 0.4);
+}
+ 
 
     .footer-bottom {
         padding-top: 2rem;
