@@ -5,7 +5,6 @@
 }
 
 <div class="dashboard-container">
-    <!-- Header de la página -->
     <div class="dashboard-header">
         <div class="header-content">
             <h2><i class="fas fa-box-open"></i> Gestión de Inventario</h2>
@@ -21,7 +20,6 @@
         </div>
     </div>
 
-    <!-- Estadísticas rápidas -->
     <div class="stats-container">
         <div class="stat-card">
             <i class="fas fa-cubes"></i>
@@ -79,7 +77,6 @@
                                 <span class="product-name">@Model.Productos[i].Nombre</span>
                             </td>
                             <td>
-                                <input type="hidden" asp-for="Productos[i].TipoOferta" />
                                 <span class="badge @(Model.Productos[i].TipoOferta == "Sin oferta" ? "bg-secondary" : "bg-primary")">
                                     @Model.Productos[i].TipoOferta
                                 </span>
@@ -108,8 +105,8 @@
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <form method="post" asp-page-handler="AgregarAlCarrito" 
-                                          asp-route-productoId="@Model.Productos[i].Id" 
+                                    <form method="post" asp-page-handler="AgregarAlCarrito"
+                                          asp-route-productoId="@Model.Productos[i].Id"
                                           asp-route-cantidad="@Model.Productos[i].Cantidad">
                                         <button type="submit" class="btn btn-success btn-sm action-btn" title="Agregar al carrito">
                                             <i class="fas fa-cart-plus"></i>
@@ -127,7 +124,6 @@
         </div>
     </form>
 </div>
-
 <style>
     .dashboard-container {
         background: linear-gradient(145deg, #1a1a1a, #2c3e50);
@@ -148,13 +144,13 @@
         gap: 1rem;
     }
 
-    .header-content h2 {
-        color: var(--text-color);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+        .header-content h2 {
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
     .header-actions {
         display: flex;
@@ -167,14 +163,14 @@
         width: 300px;
     }
 
-    .search-box i {
-        position: absolute;
-        left: 1rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-color);
-        opacity: 0.7;
-    }
+        .search-box i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+            opacity: 0.7;
+        }
 
     .search-input {
         width: 100%;
@@ -186,10 +182,10 @@
         transition: all 0.3s ease;
     }
 
-    .search-input:focus {
-        background: rgba(52, 152, 219, 0.2);
-        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-    }
+        .search-input:focus {
+            background: rgba(52, 152, 219, 0.2);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
 
     .stats-container {
         display: grid;
@@ -208,15 +204,15 @@
         transition: all 0.3s ease;
     }
 
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
-    }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(52, 152, 219, 0.2);
+        }
 
-    .stat-card i {
-        font-size: 2rem;
-        color: var(--accent-color);
-    }
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
 
     .stat-info h3 {
         color: var(--text-color);
@@ -243,25 +239,25 @@
         margin: 0;
     }
 
-    .table thead th {
-        background: linear-gradient(to right, #2c3e50, #3498db);
-        color: var(--text-color);
-        font-weight: 600;
-        border: none;
-        padding: 1rem;
-    }
+        .table thead th {
+            background: linear-gradient(to right, #2c3e50, #3498db);
+            color: var(--text-color);
+            font-weight: 600;
+            border: none;
+            padding: 1rem;
+        }
 
-    .table thead th i {
-        margin-right: 0.5rem;
-    }
+            .table thead th i {
+                margin-right: 0.5rem;
+            }
 
     .product-row {
         transition: all 0.3s ease;
     }
 
-    .product-row:hover {
-        background: rgba(52, 152, 219, 0.1);
-    }
+        .product-row:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
 
     .product-info {
         display: flex;
@@ -334,9 +330,9 @@
         transition: all 0.3s ease;
     }
 
-    .action-btn:hover {
-        transform: translateY(-2px);
-    }
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
 
     .add-product-btn {
         background: linear-gradient(45deg, #27ae60, #2ecc71);
@@ -349,10 +345,10 @@
         transition: all 0.3s ease;
     }
 
-    .add-product-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
-    }
+        .add-product-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+        }
 
     .alert {
         border-radius: 15px;
@@ -363,11 +359,10 @@
         gap: 0.5rem;
     }
 
-    .alert i {
-        font-size: 1.2rem;
-    }
+        .alert i {
+            font-size: 1.2rem;
+        }
 </style>
-
 @section Scripts {
     <script>
         function incrementQuantity(index) {
@@ -383,7 +378,6 @@
             }
         }
 
-        // Búsqueda en tiempo real
         document.getElementById('searchInput').addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             document.querySelectorAll('.product-row').forEach(row => {
@@ -392,4 +386,4 @@
             });
         });
     </script>
-} 
+}
