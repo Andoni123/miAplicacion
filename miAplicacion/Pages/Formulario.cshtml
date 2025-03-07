@@ -8,21 +8,23 @@
     <h2>Mi Formulario Web</h2>
 
     <form method="post">
-        <div class="mb-3">
+        <div class="form-floating mb-3">
+        <input asp-for="Nombre" class="form-control" placeholder="Nombre"/>
             <label asp-for="Nombre" class="form-label">Nombre:</label>
-            <input asp-for="Nombre" class="form-control" />
+            
             <span asp-validation-for="Nombre" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label">Email:</label>
-            <input asp-for="Email" class="form-control" />
+        <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control"  placeholder="Email"/>
+            <label asp-for="Email" >Email:</label>
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
-        <div class="mb-3">
+        <div class="form-floating mb-3">
+                    <textarea asp-for="Mensaje" class="form-control" rows="3" placeholder="Mensaje"></textarea>
+
             <label asp-for="Mensaje" class="form-label">Mensaje:</label>
-            <textarea asp-for="Mensaje" class="form-control" rows="3"></textarea>
             <span asp-validation-for="Mensaje" class="text-danger"></span>
         </div>
 
