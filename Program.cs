@@ -5,13 +5,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregar servicios al contenedor
 builder.Services.AddRazorPages();
 
-// Agregar autenticación por cookies - Esta es la parte importante que faltaba
+// Agregar autenticaciÃ³n por cookies - Esta es la parte importante que faltaba
 builder.Services.AddAuthentication("Cookies")
     .AddCookie("Cookies", options =>
     {
         options.LoginPath = "/";
+        options.LogoutPath = "/Logout";
         options.AccessDeniedPath = "/";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.Cookie.Name = "miAplicacion.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 var app = builder.Build();
@@ -32,4 +36,4 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 
-app.Run();
+app.Run(); 
