@@ -1,122 +1,55 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using System.Linq;
-using miAplicacion.Models;
-using miAplicacion.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq; // Añadir esta línea
+using System.Collections.Generic; // Añadir esta línea
+using miAplicacion.Models; // Añadir esta línea
 
-namespace miAplicacion.Pages
+namespace miAplicacion.Pages;
+
+public class CarritoModel : PageModel
 {
-    [Authorize]
-    public class CarritoModel : PageModel
+    public List<(Producto Producto, int Cantidad)> ItemsCarrito
     {
-        private readonly ILogger<CarritoModel> _logger;
-
-        public CarritoModel(ILogger<CarritoModel> logger)
+        get
         {
-            _logger = logger;
+            var productos = GestionProductosModel._productos;
+            return GestionProductosModel._seleccionados
+                .Select(s => (productos.FirstOrDefault(p => p.Id == s.Key), s.Value))
+                .Where(item => item.Item1 != null)
+                .ToList();
         }
+    }
 
-        public List<CarritoItem> ItemsCarrito { get; set; } = new List<CarritoItem>();
-        public decimal Total { get; set; }
+    public decimal Total => ItemsCarrito.Sum(item => item.Producto.Precio * item.Cantidad);
 
-        public void OnGet()
+    private void GuardarCarrito()
+    {
+        var carritoJson = JsonSerializer.Serialize(GestionProductosModel._seleccionados);
+        HttpContext.Session.SetString("carrito", carritoJson);
+    }
+
+    public IActionResult OnPostEliminarDelCarrito(int id)
+    {
+        if (GestionProductosModel._seleccionados.ContainsKey(id))
         {
-            try
-            {
-                ItemsCarrito = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-                _logger.LogInformation($"Carrito recuperado con {ItemsCarrito.Count} items");
-                CalcularTotal();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al cargar el carrito: {ex.Message}");
-                ItemsCarrito = new List<CarritoItem>();
-            }
-        }
-
-        public IActionResult OnPostAgregarAlCarrito(int productoId, string nombre, decimal precio, int cantidad, string tipoOferta, string imagenUrl)
-        {
-            try
-            {
-                var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-
-                var itemExistente = carritoItems.FirstOrDefault(i => i.Id == productoId);
-                if (itemExistente != null)
-                {
-                    itemExistente.Cantidad += cantidad;
-                }
-                else
-                {
-                    carritoItems.Add(new CarritoItem
-                    {
-                        Id = productoId,
-                        Nombre = nombre,
-                        Precio = precio,
-                        Cantidad = cantidad,
-                        TipoOferta = tipoOferta,
-                        ImagenUrl = imagenUrl
-                    });
-                }
-
-                HttpContext.Session.SetObject("Carrito", carritoItems);
-                ItemsCarrito = carritoItems; // Actualizar la propiedad ItemsCarrito
-                CalcularTotal(); // Recalcular el total
-                TempData["MensajeExito"] = "Producto agregado al carrito exitosamente";
-                return RedirectToPage();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error al agregar al carrito: {ex.Message}");
-                TempData["MensajeError"] = "Error al agregar al carrito: " + ex.Message;
-                return RedirectToPage();
-            }
-        }
-
-        public IActionResult OnPostEliminar(int id)
-        {
-            var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-            var item = carritoItems.FirstOrDefault(i => i.Id == id);
-            if (item != null)
-            {
-                carritoItems.Remove(item);
-                HttpContext.Session.SetObject("Carrito", carritoItems);
-            }
-            ModelState.Clear(); // Clear the model state
-            return RedirectToPage();
-        }
-
-        public IActionResult OnPostActualizarCantidad(int id, int cantidad)
-        {
-            var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-            var item = carritoItems.FirstOrDefault(i => i.Id == id);
+            var cantidad = GestionProductosModel._seleccionados[id];
+            var producto = GestionProductosModel._productos.FirstOrDefault(p => p.Id == id);
             
-            if (item != null && cantidad >= 0)
+            if (producto != null)
             {
-                item.Cantidad = cantidad;
-                if (cantidad == 0)
-                {
-                    carritoItems.Remove(item);
-                }
-                HttpContext.Session.SetObject("Carrito", carritoItems);
+                producto.Stock += cantidad; // Devolver al stock
+                GestionProductosModel._seleccionados.Remove(id);
+                
+                // Guardar cambios
+                var productosJson = JsonSerializer.Serialize(GestionProductosModel._productos);
+                HttpContext.Session.SetString("productos", productosJson);
+                GuardarCarrito();
+
+                TempData["Mensaje"] = "Producto eliminado del carrito.";
             }
-            
-            return RedirectToPage();
         }
 
-        public JsonResult OnGetObtenerTotal()
-        {
-            var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-            var total = carritoItems.Sum(item => item.Precio * item.Cantidad);
-            return new JsonResult(new { total = total.ToString("N2") });
-        }
-
-        private void CalcularTotal()
-        {
-            Total = ItemsCarrito.Sum(item => item.Precio * item.Cantidad);
-        }
+        return RedirectToPage();
     }
 }

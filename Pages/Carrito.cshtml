@@ -16,7 +16,6 @@
                         <th>Cantidad</th>
                         <th>Precio Unitario</th>
                         <th>Subtotal</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,14 +27,6 @@
                             <td>@item.Cantidad</td>
                             <td>@item.Producto.Precio.ToString("C")</td>
                             <td>@((item.Producto.Precio * item.Cantidad).ToString("C"))</td>
-                            <td>
-                                <form method="post" asp-page-handler="EliminarDelCarrito">
-                                    <input type="hidden" name="id" value="@item.Producto.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
                         </tr>
                     }
                 </tbody>

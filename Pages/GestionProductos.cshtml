@@ -1,0 +1,40 @@
+@page
+@model GestionProductosModel
+@{
+    ViewData["Title"] = "Gestión de Productos";
+}
+
+<div class="container mt-4">
+    <h2>Productos Disponibles</h2>
+    <form method="post">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo de Oferta</th>
+                    <th>Stock</th>
+                    <th>Cantidad</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in Model.Productos)
+                {
+                    <tr>
+                        <td>@producto.Nombre</td>
+                        <td>@producto.TipoOferta</td>
+                        <td>@producto.Stock</td>
+                        <td style="width: 150px;">
+                            <input type="number" class="form-control" 
+                                   name="cantidades[@producto.Id]" 
+                                   min="0" max="@producto.Stock" value="0" />
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-primary">Agregar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+</div> 
