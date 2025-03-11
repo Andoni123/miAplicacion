@@ -2,37 +2,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+using System.Linq;
 using miAplicacion.Models;
 using miAplicacion.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace miAplicacion.Pages
 {
-    public class Producto
-    {
-        public int Id { get; set; }
-        public string Nombre { get; set; }
-        public string TipoOferta { get; set; }
-        public int Cantidad { get; set; }
-        public decimal Precio { get; set; }
-        public string Categoria { get; set; }
-        public string Estado { get; set; }
-        public string ImagenUrl { get; set; }
-    }
-
+    [Authorize]
     public class GestionProductosModel : PageModel
     {
         private readonly ILogger<GestionProductosModel> _logger;
-        [BindProperty]
-        public List<Producto> Productos { get; set; }
-        
-        [TempData]
-        public string MensajeExito { get; set; }
 
         public GestionProductosModel(ILogger<GestionProductosModel> logger)
         {
             _logger = logger;
-            // Datos de ejemplo - En un caso real, esto vendría de una base de datos
+            // Inicializar productos de ejemplo
             Productos = new List<Producto>
             {
                 new Producto { 
@@ -78,46 +63,51 @@ namespace miAplicacion.Pages
             };
         }
 
+        [BindProperty]
+        public List<Producto> Productos { get; set; }
+
+        [TempData]
+        public string MensajeExito { get; set; }
+
         public void OnGet()
         {
         }
 
-        public IActionResult OnPost()
+        public IActionResult OnPostAgregarAlCarrito(int productoId, string nombre, decimal precio, string tipoOferta, string imagenUrl, int cantidad)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return Page();
+                var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
+                
+                var itemExistente = carritoItems.FirstOrDefault(i => i.Id == productoId);
+                if (itemExistente != null)
+                {
+                    itemExistente.Cantidad += cantidad;
+                }
+                else
+                {
+                    carritoItems.Add(new CarritoItem
+                    {
+                        Id = productoId,
+                        Nombre = nombre,
+                        Precio = precio,
+                        Cantidad = cantidad,
+                        TipoOferta = tipoOferta,
+                        ImagenUrl = imagenUrl
+                    });
+                }
+
+                HttpContext.Session.SetObject("Carrito", carritoItems);
+                TempData["MensajeExito"] = $"Se agregó {cantidad} {nombre}(s) al carrito";
+                
+                return RedirectToPage("/Carrito");
             }
-
-            // Simulamos una actualización exitosa
-            MensajeExito = "¡Inventario actualizado correctamente!";
-            return Page();
-        }
-
-        public IActionResult OnPostAgregarAlCarrito(int productoId, int cantidad)
-        {
-            var producto = Productos.FirstOrDefault(p => p.Id == productoId);
-            if (producto == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                _logger.LogError($"Error al agregar al carrito: {ex.Message}");
+                TempData["Error"] = "Error al agregar al carrito";
+                return RedirectToPage();
             }
-
-            var carritoItems = HttpContext.Session.GetObject<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
-            
-            var item = new CarritoItem
-            {
-                Id = producto.Id,
-                Nombre = producto.Nombre,
-                Cantidad = cantidad,
-                Precio = producto.Precio,
-                TipoOferta = producto.TipoOferta
-            };
-
-            carritoItems.Add(item);
-            HttpContext.Session.SetObject("Carrito", carritoItems);
-
-            MensajeExito = $"{producto.Nombre} agregado al carrito";
-            return RedirectToPage();
         }
     }
-} 
+}

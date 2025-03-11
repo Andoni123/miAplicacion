@@ -52,77 +52,69 @@
         </div>
     }
 
-    <form method="post" id="productForm">
-        <div class="table-container">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-image"></i> Producto</th>
-                        <th><i class="fas fa-tag"></i> Oferta</th>
-                        <th><i class="fas fa-dollar-sign"></i> Precio</th>
-                        <th><i class="fas fa-boxes"></i> Stock</th>
-                        <th><i class="fas fa-folder"></i> Categoría</th>
-                        <th><i class="fas fa-chart-line"></i> Estado</th>
-                        <th><i class="fas fa-cog"></i> Acciones</th>
+    <div class="table-container">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th><i class="fas fa-image"></i> Producto</th>
+                    <th><i class="fas fa-tag"></i> Oferta</th>
+                    <th><i class="fas fa-dollar-sign"></i> Precio</th>
+                    <th><i class="fas fa-boxes"></i> Stock</th>
+                    <th><i class="fas fa-folder"></i> Categoría</th>
+                    <th><i class="fas fa-chart-line"></i> Estado</th>
+                    <th><i class="fas fa-cog"></i> Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in Model.Productos)
+                {
+                    <tr class="product-row">
+                        <td class="product-info">
+                            <img src="@producto.ImagenUrl" alt="@producto.Nombre" class="product-image" />
+                            <span class="product-name">@producto.Nombre</span>
+                        </td>
+                        <td>
+                            <span class="badge @(producto.TipoOferta == "Sin oferta" ? "bg-secondary" : "bg-primary")">
+                                @producto.TipoOferta
+                            </span>
+                        </td>
+                        <td>
+                            <span class="precio">€@producto.Precio.ToString("N2")</span>
+                        </td>
+                        <td>
+                            <div class="quantity-control">
+                                <input type="number" class="form-control cantidad-input" value="1" min="1" id="cantidad-@producto.Id" />
+                            </div>
+                        </td>
+                        <td>
+                            <span class="categoria">@producto.Categoria</span>
+                        </td>
+                        <td>
+                            <span class="estado-badge @(producto.Estado == "En Stock" ? "estado-success" : "estado-warning")">
+                                @producto.Estado
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <form method="post" asp-page-handler="AgregarAlCarrito">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productoId" value="@producto.Id" />
+                                    <input type="hidden" name="nombre" value="@producto.Nombre" />
+                                    <input type="hidden" name="precio" value="@producto.Precio" />
+                                    <input type="hidden" name="tipoOferta" value="@producto.TipoOferta" />
+                                    <input type="hidden" name="imagenUrl" value="@producto.ImagenUrl" />
+                                    <input type="hidden" name="cantidad" id="cantidad-hidden-@producto.Id" value="1" />
+                                    <button type="submit" class="btn btn-success btn-sm action-btn" onclick="actualizarCantidad(@producto.Id)">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    @for (var i = 0; i < Model.Productos.Count; i++)
-                    {
-                        <tr class="product-row">
-                            <td class="product-info">
-                                <input type="hidden" asp-for="Productos[i].Id" />
-                                <input type="hidden" asp-for="Productos[i].Nombre" />
-                                <img src="@Model.Productos[i].ImagenUrl" alt="@Model.Productos[i].Nombre" class="product-image" />
-                                <span class="product-name">@Model.Productos[i].Nombre</span>
-                            </td>
-                            <td>
-                                <span class="badge @(Model.Productos[i].TipoOferta == "Sin oferta" ? "bg-secondary" : "bg-primary")">
-                                    @Model.Productos[i].TipoOferta
-                                </span>
-                            </td>
-                            <td>
-                                <span class="precio">€@Model.Productos[i].Precio.ToString("N2")</span>
-                            </td>
-                            <td>
-                                <div class="quantity-control">
-                                    <button type="button" class="btn btn-outline-primary btn-sm quantity-btn" onclick="decrementQuantity(@i)">
-                                        <i class="fas fa-minus"></i>
-                                    </button>
-                                    <input asp-for="Productos[i].Cantidad" class="form-control cantidad-input" type="number" min="0" />
-                                    <button type="button" class="btn btn-outline-primary btn-sm quantity-btn" onclick="incrementQuantity(@i)">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="categoria">@Model.Productos[i].Categoria</span>
-                            </td>
-                            <td>
-                                <span class="estado-badge @(Model.Productos[i].Estado == "En Stock" ? "estado-success" : "estado-warning")">
-                                    @Model.Productos[i].Estado
-                                </span>
-                            </td>
-                            <td>
-                                <div class="action-buttons">
-                                    <form method="post" asp-page-handler="AgregarAlCarrito"
-                                          asp-route-productoId="@Model.Productos[i].Id"
-                                          asp-route-cantidad="@Model.Productos[i].Cantidad">
-                                        <button type="submit" class="btn btn-success btn-sm action-btn" title="Agregar al carrito">
-                                            <i class="fas fa-cart-plus"></i>
-                                        </button>
-                                    </form>
-                                    <button type="button" class="btn btn-info btn-sm action-btn" title="Ver detalles">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </form>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 <style>
     .dashboard-container {
@@ -222,7 +214,7 @@
     }
 
     .stat-info p {
-        color: var(--text-color);
+        color: var (--text-color);
         font-size: 1.5rem;
         font-weight: bold;
         margin: 0;
@@ -365,17 +357,9 @@
 </style>
 @section Scripts {
     <script>
-        function incrementQuantity(index) {
-            const input = document.querySelector(`input[name="Productos[${index}].Cantidad"]`);
-            input.value = parseInt(input.value) + 1;
-        }
-
-        function decrementQuantity(index) {
-            const input = document.querySelector(`input[name="Productos[${index}].Cantidad"]`);
-            const newValue = parseInt(input.value) - 1;
-            if (newValue >= 0) {
-                input.value = newValue;
-            }
+        function actualizarCantidad(productoId) {
+            const cantidad = document.getElementById(`cantidad-${productoId}`).value;
+            document.getElementById(`cantidad-hidden-${productoId}`).value = cantidad;
         }
 
         document.getElementById('searchInput').addEventListener('input', function(e) {
