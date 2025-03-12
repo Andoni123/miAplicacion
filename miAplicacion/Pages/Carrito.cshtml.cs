@@ -1,55 +1,69 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq; // Añadir esta línea
-using System.Collections.Generic; // Añadir esta línea
-using miAplicacion.Models; // Añadir esta línea
+using System.Linq; // Aï¿½adir esta lï¿½nea
+using System.Collections.Generic; // Aï¿½adir esta lï¿½nea
+using miAplicacion.Models; // Aï¿½adir esta lï¿½nea
 
 namespace miAplicacion.Pages;
 
 public class CarritoModel : PageModel
 {
-    public List<(Producto Producto, int Cantidad)> ItemsCarrito
-    {
-        get
-        {
-            var productos = GestionProductosModel._productos;
-            return GestionProductosModel._seleccionados
-                .Select(s => (productos.FirstOrDefault(p => p.Id == s.Key), s.Value))
-                .Where(item => item.Item1 != null)
-                .ToList();
-        }
-    }
+    private const string PRODUCTOS_KEY = "productos";
+    private const string CARRITO_KEY = "carrito";
+    
+    private List<Producto> _productos = new();
+    private Dictionary<int, int> _carrito = new();
 
+    public List<(Producto Producto, int Cantidad)> ItemsCarrito { get; private set; } = new();
     public decimal Total => ItemsCarrito.Sum(item => item.Producto.Precio * item.Cantidad);
 
-    private void GuardarCarrito()
+    public void OnGet()
     {
-        var carritoJson = JsonSerializer.Serialize(GestionProductosModel._seleccionados);
-        HttpContext.Session.SetString("carrito", carritoJson);
+        CargarDatos();
+        ActualizarItemsCarrito();
     }
 
     public IActionResult OnPostEliminarDelCarrito(int id)
     {
-        if (GestionProductosModel._seleccionados.ContainsKey(id))
-        {
-            var cantidad = GestionProductosModel._seleccionados[id];
-            var producto = GestionProductosModel._productos.FirstOrDefault(p => p.Id == id);
-            
-            if (producto != null)
-            {
-                producto.Stock += cantidad; // Devolver al stock
-                GestionProductosModel._seleccionados.Remove(id);
-                
-                // Guardar cambios
-                var productosJson = JsonSerializer.Serialize(GestionProductosModel._productos);
-                HttpContext.Session.SetString("productos", productosJson);
-                GuardarCarrito();
+        CargarDatos();
 
-                TempData["Mensaje"] = "Producto eliminado del carrito.";
-            }
+        if (_carrito.ContainsKey(id))
+        {
+            _carrito.Remove(id);
+            GuardarCarrito();
+            TempData["Mensaje"] = "Producto eliminado del carrito.";
         }
 
         return RedirectToPage();
+    }
+
+    private void CargarDatos()
+    {
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
+        if (!string.IsNullOrEmpty(productosJson))
+        {
+            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson);
+        }
+
+        var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
+        if (!string.IsNullOrEmpty(carritoJson))
+        {
+            _carrito = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson);
+        }
+    }
+
+    private void ActualizarItemsCarrito()
+    {
+        ItemsCarrito = _carrito
+            .Select(c => (_productos.FirstOrDefault(p => p.Id == c.Key), c.Value))
+            .Where(item => item.Item1 != null)
+            .ToList();
+    }
+
+    private void GuardarCarrito()
+    {
+        var carritoJson = JsonSerializer.Serialize(_carrito);
+        HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
     }
 }

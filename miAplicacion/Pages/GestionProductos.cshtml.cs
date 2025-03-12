@@ -1,4 +1,3 @@
-// FILE CONTEXT
 using miAplicacion.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +12,9 @@ public class GestionProductosModel : PageModel
     
     [BindProperty]
     public Producto NuevoProducto { get; set; } = new();
-
-    private readonly List<Producto> _productos = [];
-    private readonly Dictionary<int, int> _seleccionados = [];
+    
+    private readonly List<Producto> _productos = new();
+    private readonly Dictionary<int, int> _seleccionados = new();
 
     public IEnumerable<Producto> Productos => _productos;
 
@@ -25,11 +24,12 @@ public class GestionProductosModel : PageModel
         if (!string.IsNullOrEmpty(productosJson))
         {
             _productos.Clear();
-            _productos.AddRange(JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? []);
+            _productos.AddRange(JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new List<Producto>());
         }
         else if (_productos.Count == 0)
         {
-            _productos.AddRange([
+            _productos.AddRange(new List<Producto>
+            {
                 new() { Id = 1, Nombre = "Camiseta Nike Dri-FIT", TipoOferta = "Normal", Stock = 25, Precio = 29.99m },
                 new() { Id = 2, Nombre = "Zapatillas Adidas Running", TipoOferta = "Oferta", Stock = 15, Precio = 89.99m },
                 new() { Id = 3, Nombre = "Pantalón Under Armour", TipoOferta = "Normal", Stock = 20, Precio = 49.99m },
@@ -45,7 +45,7 @@ public class GestionProductosModel : PageModel
                 new() { Id = 13, Nombre = "Esterilla Yoga Premium", TipoOferta = "Oferta", Stock = 20, Precio = 29.99m },
                 new() { Id = 14, Nombre = "Rodilleras Deportivas", TipoOferta = "Normal", Stock = 25, Precio = 19.99m },
                 new() { Id = 15, Nombre = "Bolsa Deporte Puma", TipoOferta = "Normal", Stock = 17, Precio = 44.99m }
-            ]);
+            });
             GuardarProductos();
         }
 
@@ -53,7 +53,7 @@ public class GestionProductosModel : PageModel
         if (!string.IsNullOrEmpty(carritoJson))
         {
             _seleccionados.Clear();
-            foreach (var item in JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? [])
+            foreach (var item in JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new Dictionary<int, int>())
             {
                 _seleccionados[item.Key] = item.Value;
             }
@@ -121,18 +121,6 @@ public class GestionProductosModel : PageModel
         return RedirectToPage("/Carrito");
     }
 
-    private void GuardarProductos()
-    {
-        var productosJson = JsonSerializer.Serialize(_productos);
-        HttpContext.Session.SetString(PRODUCTOS_KEY, productosJson);
-    }
-
-    private void GuardarCarrito()
-    {
-        var carritoJson = JsonSerializer.Serialize(_seleccionados);
-        HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
-    }
-
     public IActionResult OnPostCrearProducto()
     {
         if (!ModelState.IsValid)
@@ -143,9 +131,21 @@ public class GestionProductosModel : PageModel
 
         NuevoProducto.Id = _productos.Any() ? _productos.Max(p => p.Id) + 1 : 1;
         _productos.Add(NuevoProducto);
+        
         GuardarProductos();
-
         TempData["Mensaje"] = $"Producto '{NuevoProducto.Nombre}' creado exitosamente.";
         return RedirectToPage();
+    }
+
+    private void GuardarProductos()
+    {
+        var productosJson = JsonSerializer.Serialize(_productos);
+        HttpContext.Session.SetString(PRODUCTOS_KEY, productosJson);
+    }
+
+    private void GuardarCarrito()
+    {
+        var carritoJson = JsonSerializer.Serialize(_seleccionados);
+        HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
     }
 }

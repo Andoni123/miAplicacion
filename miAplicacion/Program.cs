@@ -13,7 +13,7 @@ var app = builder.Build();
 
 app.UseStaticFiles();
 app.UseRouting();
-app.UseSession(); // Importante: agregar el middleware de sesión
+app.UseSession(); // Agregar middleware de sesión
 app.MapRazorPages();
 
 app.Run();
