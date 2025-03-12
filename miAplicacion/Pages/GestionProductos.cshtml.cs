@@ -10,22 +10,22 @@ public class GestionProductosModel : PageModel
 {
     [BindProperty]
     public Producto NuevoProducto { get; set; } = new();
+    
+    private const string PRODUCTOS_KEY = "productos";
+    private const string CARRITO_KEY = "carrito";
+    
+    private List<Producto> _productos = new();
+    private Dictionary<int, int> _carrito = new();
 
-    public static List<Producto> _productos = new();
-    public static Dictionary<int, int> _seleccionados = new();
-
-    public List<Producto> Productos => _productos; // 🔹 Agregar esta propiedad
-
+    public List<Producto> Productos => _productos;
+    
     public void OnGet()
     {
-        // Cargar productos del SessionStorage
-        var productosJson = HttpContext.Session.GetString("productos");
-        if (!string.IsNullOrEmpty(productosJson))
+        // Recuperar productos del SessionStorage
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
+        if (string.IsNullOrEmpty(productosJson))
         {
-            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new();
-        }
-        else if (!_productos.Any()) // Solo inicializar si no hay productos
-        {
+            // Inicializar con productos por defecto si no hay datos
             _productos = new List<Producto>
             {
                 new Producto { Id = 1, Nombre = "Camiseta Nike Dri-FIT", TipoOferta = "Normal", Stock = 25, Precio = 29.99m },
@@ -46,25 +46,17 @@ public class GestionProductosModel : PageModel
             };
             GuardarProductos();
         }
+        else
+        {
+            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson);
+        }
 
-        // Cargar carrito del SessionStorage
-        var carritoJson = HttpContext.Session.GetString("carrito");
+        // Recuperar carrito
+        var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
         if (!string.IsNullOrEmpty(carritoJson))
         {
-            _seleccionados = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new();
+            _carrito = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson);
         }
-    }
-
-    private void GuardarProductos()
-    {
-        var productosJson = JsonSerializer.Serialize(_productos);
-        HttpContext.Session.SetString("productos", productosJson);
-    }
-
-    private void GuardarCarrito()
-    {
-        var carritoJson = JsonSerializer.Serialize(_seleccionados);
-        HttpContext.Session.SetString("carrito", carritoJson);
     }
 
     public IActionResult OnPostCrearProducto()
@@ -75,29 +67,39 @@ public class GestionProductosModel : PageModel
             return RedirectToPage();
         }
 
+        // Recuperar productos actuales
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
+        if (!string.IsNullOrEmpty(productosJson))
+        {
+            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson);
+        }
+
         NuevoProducto.Id = _productos.Any() ? _productos.Max(p => p.Id) + 1 : 1;
         _productos.Add(NuevoProducto);
+        
         GuardarProductos();
-
         TempData["Mensaje"] = $"Producto '{NuevoProducto.Nombre}' creado exitosamente.";
         return RedirectToPage();
     }
 
     public IActionResult OnPostEliminarProducto(int id)
     {
+        // Recuperar datos actuales
+        CargarDatos();
+
         var producto = _productos.FirstOrDefault(p => p.Id == id);
         if (producto != null)
         {
             _productos.Remove(producto);
-            GuardarProductos();
-
+            
             // Eliminar del carrito si existe
-            if (_seleccionados.ContainsKey(id))
+            if (_carrito.ContainsKey(id))
             {
-                _seleccionados.Remove(id);
+                _carrito.Remove(id);
                 GuardarCarrito();
             }
 
+            GuardarProductos();
             TempData["Mensaje"] = $"Producto '{producto.Nombre}' eliminado exitosamente.";
         }
 
@@ -106,25 +108,65 @@ public class GestionProductosModel : PageModel
 
     public IActionResult OnPost(Dictionary<int, int> cantidades)
     {
+        if (cantidades == null) return RedirectToPage();
+        
+        // Recuperar datos actuales
+        CargarDatos();
+
         foreach (var cantidad in cantidades)
         {
             if (cantidad.Value > 0)
             {
                 var producto = _productos.FirstOrDefault(p => p.Id == cantidad.Key);
-                if (producto != null && cantidad.Value <= producto.Stock)
+                if (producto != null)
                 {
-                    producto.Stock -= cantidad.Value;
-
-                    if (_seleccionados.ContainsKey(cantidad.Key))
-                        _seleccionados[cantidad.Key] += cantidad.Value;
+                    int cantidadActualEnCarrito = _carrito.ContainsKey(cantidad.Key) ? _carrito[cantidad.Key] : 0;
+                    int cantidadTotal = cantidadActualEnCarrito + cantidad.Value;
+                    
+                    if (cantidadTotal <= producto.Stock)
+                    {
+                        if (_carrito.ContainsKey(cantidad.Key))
+                            _carrito[cantidad.Key] += cantidad.Value;
+                        else
+                            _carrito[cantidad.Key] = cantidad.Value;
+                    }
                     else
-                        _seleccionados[cantidad.Key] = cantidad.Value;
+                    {
+                        TempData["Error"] = $"No hay suficiente stock para '{producto.Nombre}'";
+                        return RedirectToPage();
+                    }
                 }
             }
         }
 
-        GuardarProductos();
         GuardarCarrito();
         return RedirectToPage("/Carrito");
+    }
+
+    private void CargarDatos()
+    {
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
+        if (!string.IsNullOrEmpty(productosJson))
+        {
+            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson);
+        }
+
+        var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
+        if (!string.IsNullOrEmpty(carritoJson))
+        {
+            _carrito = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson);
+        }
+    }
+
+    private void GuardarProductos()
+    {
+        var productosJson = JsonSerializer.Serialize(_productos);
+        HttpContext.Session.SetString(PRODUCTOS_KEY, productosJson);
+    }
+
+    private void GuardarCarrito()
+    {
+        var carritoJson = JsonSerializer.Serialize(_carrito);
+        HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
     }
 }
