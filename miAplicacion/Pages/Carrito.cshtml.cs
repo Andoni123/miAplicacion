@@ -28,14 +28,65 @@ public class CarritoModel : PageModel
     {
         CargarDatos();
 
-        if (_carrito.ContainsKey(id))
+        if (_carrito.TryGetValue(id, out int cantidad))
         {
-            _carrito.Remove(id);
-            GuardarCarrito();
-            TempData["Mensaje"] = "Producto eliminado del carrito.";
+            var producto = _productos.FirstOrDefault(p => p.Id == id);
+            if (producto != null)
+            {
+                producto.Stock += cantidad; // Devolver al stock
+                _carrito.Remove(id);
+                
+                // Guardar los cambios
+                GuardarProductos();
+                GuardarCarrito();
+                
+                TempData["Mensaje"] = "Producto eliminado del carrito.";
+            }
         }
 
         return RedirectToPage();
+    }
+
+    public JsonResult OnPostActualizarCantidad(int id, int cantidad)
+    {
+        CargarDatos();
+        var producto = _productos.FirstOrDefault(p => p.Id == id);
+        
+        if (producto == null)
+            return new JsonResult(new { success = false, message = "Producto no encontrado" });
+
+        if (cantidad < 0)
+            return new JsonResult(new { success = false, message = "La cantidad no puede ser negativa" });
+
+        // Si hay cantidad actual en el carrito, calculamos la diferencia
+        if (_carrito.TryGetValue(id, out int cantidadActual))
+        {
+            int diferencia = cantidad - cantidadActual;
+            
+            // Si estamos aumentando la cantidad
+            if (diferencia > 0)
+            {
+                if (diferencia > producto.Stock)
+                    return new JsonResult(new { success = false, message = "No hay suficiente stock" });
+                
+                producto.Stock -= diferencia;
+            }
+            // Si estamos disminuyendo la cantidad
+            else if (diferencia < 0)
+            {
+                producto.Stock += Math.Abs(diferencia);
+            }
+
+            if (cantidad == 0)
+                _carrito.Remove(id);
+            else
+                _carrito[id] = cantidad;
+        }
+
+        GuardarProductos();
+        GuardarCarrito();
+        
+        return new JsonResult(new { success = true });
     }
 
     private void CargarDatos()
@@ -43,13 +94,13 @@ public class CarritoModel : PageModel
         var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
         if (!string.IsNullOrEmpty(productosJson))
         {
-            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson);
+            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new();
         }
 
         var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
         if (!string.IsNullOrEmpty(carritoJson))
         {
-            _carrito = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson);
+            _carrito = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new();
         }
     }
 
@@ -65,5 +116,11 @@ public class CarritoModel : PageModel
     {
         var carritoJson = JsonSerializer.Serialize(_carrito);
         HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
+    }
+
+    private void GuardarProductos()
+    {
+        var productosJson = JsonSerializer.Serialize(_productos);
+        HttpContext.Session.SetString(PRODUCTOS_KEY, productosJson);
     }
 }

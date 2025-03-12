@@ -652,11 +652,13 @@ h2:after {
 }
 /* Login styles */
 .login-body {
-    background-color: var(--bg-dark);
+    background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 2rem;
+    margin: 0;
 }
 
 .login-container {
@@ -667,19 +669,34 @@ h2:after {
 
 .login-card {
     background-color: var(--surface-dark);
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 2.5rem;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
+    margin: 8rem auto;
 }
 
 .login-title {
     color: var(--text-light);
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 600;
     text-align: center;
     margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.login-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
 }
 
 .login-form {
@@ -903,19 +920,46 @@ input[type="number"] {
     border-radius: 0.375rem;
 }
 
-/* Estilo para el buscador */
-#buscador {
-    background-color: var(--surface-dark);
-    border: 1px solid var(--border-dark);
-    color: var(--text-light);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1rem;
+/* Estilos para el buscador */
+.search-container {
+    margin-bottom: 2rem;
 }
 
-#buscador:focus {
+.search-container .input-group {
+    height: 48px; /* Altura fija para todo el grupo */
+}
+
+.search-container .input-group-text {
+    background-color: var(--primary-blue);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 0.5rem 0 0 0.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.search-container .form-control {
+    height: 100%;
+    font-size: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--surface-dark);
+    color: var(--text-light);
+    border-radius: 0 0.5rem 0.5rem 0;
+    padding: 0.75rem 1.25rem;
+}
+
+.search-container .form-control:focus {
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    box-shadow: none;
+    background-color: var(--surface-dark);
+    color: var(--text-light);
+}
+
+.search-container .form-control::placeholder {
+    color: var(--text-gray);
 }
 
 /* Contenedor principal */
@@ -948,19 +992,21 @@ input[type="number"] {
 
 .login-card {
     background-color: var(--surface-dark);
-    border-radius: 0.75rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 2.5rem;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
 }
 
 .login-title {
     color: var(--text-light);
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 600;
     text-align: center;
     margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 0.5rem;
 }
 
 /* Buscador */
@@ -1062,10 +1108,25 @@ input[type="number"] {
 
 /* Componentes */
 .page-title {
-    color: var(--bs-primary);
-    border-bottom: 3px solid var(--bs-primary);
-    padding-bottom: 0.5rem;
+    color: var(--text-light);
+    font-size: 1.75rem;
+    font-weight: 600;
     margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 0.5rem;
+    text-align: center;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
 }
 
 .alert {
@@ -1174,4 +1235,434 @@ input[type="number"] {
 
 .modal.show .modal-dialog {
     transform: scale(1);
+}
+
+/* Eliminar los keyframes y reemplazar con transiciones CSS estándar */
+.alert {
+    transition: all 0.5s ease-out;
+    opacity: 1;
+}
+
+.alert.fade {
+    opacity: 0;
+}
+
+.alert.show {
+    opacity: 1;
+}
+
+/* Resto de estilos para la tabla */
+.table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5em 0.8em;
+    font-weight: 500;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+/* Mejorar la apariencia de los inputs de cantidad */
+.cantidad-input {
+    width: 70px;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Estilos para los botones de acción */
+.btn-action {
+    min-width: 38px;
+    padding: 0.25rem;
+}
+
+/* Mejorar inputs del login */
+.login-card .form-control {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.login-card .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+    color: var(--text-light);
+}
+
+.login-card .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Etiquetas del formulario */
+.login-card .form-label {
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Botón de login */
+.login-card .btn-primary {
+    background-color: var(--primary-blue);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    width: 100%;
+    margin-top: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.login-card .btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.login-card .btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Mensaje de error */
+.login-card .validation-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Input group para iconos */
+.login-card .input-group-text {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-light);
+}
+
+/* Checkbox personalizado */
+.login-card .form-check-input {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.login-card .form-check-input:checked {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.login-card .form-check-label {
+    color: var(--text-light);
+}
+
+/* Links */
+.login-card a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.login-card a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Mejoras en las tarjetas y contenedores */
+.table-responsive {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Cabecera de tabla mejorada */
+.table-dark {
+    background: linear-gradient(45deg, var(--bg-darker), var(--surface-dark));
+    border-bottom: 2px solid var(--accent-color);
+}
+
+/* Hover suave en las filas */
+.table-hover tbody tr:hover {
+    background: linear-gradient(90deg, 
+        rgba(var(--primary-blue-rgb), 0.05) 0%,
+        rgba(var(--primary-blue-rgb), 0.02) 100%
+    );
+    transition: all 0.3s ease;
+}
+
+/* Badges más modernos */
+.badge {
+    padding: 0.5em 1em;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.badge.bg-primary {
+    background: linear-gradient(45deg, var(--primary-blue), var(--primary-hover)) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(45deg, #dc3545, #c82333) !important;
+}
+
+.badge.bg-success {
+    background: linear-gradient(45deg, #198754, #157347) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(45deg, #ffc107, #e0a800) !important;
+    color: #000;
+}
+
+/* Botones con efecto de brillo */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.btn:hover::after {
+    opacity: 1;
+    transform: rotate(45deg) translate(50%, 50%);
+}
+
+/* Inputs con mejor contraste */
+.form-control {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.25rem rgba(var(--primary-blue-rgb), 0.15);
+}
+
+/* Alertas más elegantes */
+.alert {
+    border: none;
+    background: linear-gradient(45deg, 
+        rgba(var(--bs-primary-rgb), 0.1),
+        rgba(var(--bs-primary-rgb), 0.05)
+    );
+    backdrop-filter: blur(10px);
+    border-left: 4px solid var(--bs-primary);
+}
+
+.alert-success {
+    background: linear-gradient(45deg, 
+        rgba(25, 135, 84, 0.1),
+        rgba(25, 135, 84, 0.05)
+    );
+    border-left-color: var(--bs-success);
+}
+
+.alert-danger {
+    background: linear-gradient(45deg, 
+        rgba(220, 53, 69, 0.1),
+        rgba(220, 53, 69, 0.05)
+    );
+    border-left-color: var(--bs-danger);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Estilos para el carrito */
+.table td {
+    vertical-align: middle;
+}
+
+.card {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.card-header {
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+/* Botones y transiciones */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Animaciones */
+.alert {
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Estilos para tablas responsive */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    /* Hacer que la tabla se comporte como cards en móvil */
+    .table-responsive table {
+        border: 0;
+    }
+
+    .table-responsive table thead {
+        display: none; /* Ocultar cabecera en móvil */
+    }
+
+    .table-responsive table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 0.5rem;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .table-responsive table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        text-align: right;
+        border: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .table-responsive table td:last-child {
+        border-bottom: 0;
+    }
+
+    /* Añadir etiquetas para cada celda */
+    .table-responsive table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        margin-right: 1rem;
+        text-align: left;
+    }
+
+    /* Ajustes específicos para el control de cantidad */
+    .table-responsive .input-group {
+        width: 120px;
+        margin-left: auto;
+    }
+
+    .table-responsive .cantidad-input {
+        width: 40px;
+        text-align: center;
+        padding: 0.25rem;
+    }
+
+    .table-responsive .btn-action {
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Ajustes para el total */
+    .table-responsive tfoot tr {
+        background: var(--surface-dark);
+    }
+
+    .table-responsive tfoot td {
+        justify-content: flex-end;
+    }
+
+    .table-responsive tfoot td::before {
+        content: "Total:";
+    }
+}
+
+/* Mejoras generales para los controles de cantidad */
+.cantidad-input {
+    width: 50px;
+    text-align: center;
+    padding: 0.375rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+}
+
+.btn-action {
+    padding: 0.375rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Eliminar flechas del input number */
+.cantidad-input::-webkit-outer-spin-button,
+.cantidad-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.cantidad-input[type=number] {
+    -moz-appearance: textfield;
 }
