@@ -14,17 +14,11 @@ public class GestionProductosModel : PageModel
     public static List<Producto> _productos = new();
     public static Dictionary<int, int> _seleccionados = new();
 
-    public List<Producto> Productos => _productos; // 🔹 Agregar esta propiedad
+    public List<Producto> Productos => _productos;
 
     public void OnGet()
     {
-        // Cargar productos del SessionStorage
-        var productosJson = HttpContext.Session.GetString("productos");
-        if (!string.IsNullOrEmpty(productosJson))
-        {
-            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new();
-        }
-        else if (!_productos.Any()) // Solo inicializar si no hay productos
+        if (!_productos.Any()) // Solo inicializar si no hay productos
         {
             _productos = new List<Producto>
             {
@@ -44,27 +38,7 @@ public class GestionProductosModel : PageModel
                 new Producto { Id = 14, Nombre = "Rodilleras Deportivas", TipoOferta = "Normal", Stock = 25, Precio = 19.99m },
                 new Producto { Id = 15, Nombre = "Bolsa Deporte Puma", TipoOferta = "Normal", Stock = 17, Precio = 44.99m }
             };
-            GuardarProductos();
         }
-
-        // Cargar carrito del SessionStorage
-        var carritoJson = HttpContext.Session.GetString("carrito");
-        if (!string.IsNullOrEmpty(carritoJson))
-        {
-            _seleccionados = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new();
-        }
-    }
-
-    private void GuardarProductos()
-    {
-        var productosJson = JsonSerializer.Serialize(_productos);
-        HttpContext.Session.SetString("productos", productosJson);
-    }
-
-    private void GuardarCarrito()
-    {
-        var carritoJson = JsonSerializer.Serialize(_seleccionados);
-        HttpContext.Session.SetString("carrito", carritoJson);
     }
 
     public IActionResult OnPostCrearProducto()
@@ -77,8 +51,7 @@ public class GestionProductosModel : PageModel
 
         NuevoProducto.Id = _productos.Any() ? _productos.Max(p => p.Id) + 1 : 1;
         _productos.Add(NuevoProducto);
-        GuardarProductos();
-
+        
         TempData["Mensaje"] = $"Producto '{NuevoProducto.Nombre}' creado exitosamente.";
         return RedirectToPage();
     }
@@ -89,13 +62,11 @@ public class GestionProductosModel : PageModel
         if (producto != null)
         {
             _productos.Remove(producto);
-            GuardarProductos();
 
             // Eliminar del carrito si existe
             if (_seleccionados.ContainsKey(id))
             {
                 _seleccionados.Remove(id);
-                GuardarCarrito();
             }
 
             TempData["Mensaje"] = $"Producto '{producto.Nombre}' eliminado exitosamente.";
@@ -106,6 +77,11 @@ public class GestionProductosModel : PageModel
 
     public IActionResult OnPost(Dictionary<int, int> cantidades)
     {
+        if (cantidades == null)
+        {
+            return RedirectToPage();
+        }
+
         foreach (var cantidad in cantidades)
         {
             if (cantidad.Value > 0)
@@ -113,18 +89,28 @@ public class GestionProductosModel : PageModel
                 var producto = _productos.FirstOrDefault(p => p.Id == cantidad.Key);
                 if (producto != null && cantidad.Value <= producto.Stock)
                 {
-                    producto.Stock -= cantidad.Value;
-
-                    if (_seleccionados.ContainsKey(cantidad.Key))
-                        _seleccionados[cantidad.Key] += cantidad.Value;
+                    // Verificar si hay suficiente stock
+                    int cantidadActualEnCarrito = _seleccionados.ContainsKey(cantidad.Key) ? _seleccionados[cantidad.Key] : 0;
+                    int cantidadTotal = cantidadActualEnCarrito + cantidad.Value;
+                    
+                    if (cantidadTotal <= producto.Stock)
+                    {
+                        if (_seleccionados.ContainsKey(cantidad.Key))
+                            _seleccionados[cantidad.Key] += cantidad.Value;
+                        else
+                            _seleccionados[cantidad.Key] = cantidad.Value;
+                            
+                        // No reducimos el stock aquí, solo cuando se confirma la compra
+                    }
                     else
-                        _seleccionados[cantidad.Key] = cantidad.Value;
+                    {
+                        TempData["Error"] = $"No hay suficiente stock para el producto '{producto.Nombre}'";
+                        return RedirectToPage();
+                    }
                 }
             }
         }
 
-        GuardarProductos();
-        GuardarCarrito();
         return RedirectToPage("/Carrito");
     }
 }
