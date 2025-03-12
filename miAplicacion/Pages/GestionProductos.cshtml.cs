@@ -8,63 +8,129 @@ namespace miAplicacion.Pages;
 
 public class GestionProductosModel : PageModel
 {
+    private const string PRODUCTOS_KEY = "productos";
+    private const string CARRITO_KEY = "carrito";
+    
     [BindProperty]
     public Producto NuevoProducto { get; set; } = new();
 
-    public static List<Producto> _productos = new();
-    public static Dictionary<int, int> _seleccionados = new();
+    private readonly List<Producto> _productos = [];
+    private readonly Dictionary<int, int> _seleccionados = [];
 
-    public List<Producto> Productos => _productos; // 🔹 Agregar esta propiedad
+    public IEnumerable<Producto> Productos => _productos;
 
     public void OnGet()
     {
-        // Cargar productos del SessionStorage
-        var productosJson = HttpContext.Session.GetString("productos");
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
         if (!string.IsNullOrEmpty(productosJson))
         {
-            _productos = JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new();
+            _productos.Clear();
+            _productos.AddRange(JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? []);
         }
-        else if (!_productos.Any()) // Solo inicializar si no hay productos
+        else if (_productos.Count == 0)
         {
-            _productos = new List<Producto>
-            {
-                new Producto { Id = 1, Nombre = "Camiseta Nike Dri-FIT", TipoOferta = "Normal", Stock = 25, Precio = 29.99m },
-                new Producto { Id = 2, Nombre = "Zapatillas Adidas Running", TipoOferta = "Oferta", Stock = 15, Precio = 89.99m },
-                new Producto { Id = 3, Nombre = "Pantalón Under Armour", TipoOferta = "Normal", Stock = 20, Precio = 49.99m },
-                new Producto { Id = 4, Nombre = "Sudadera Puma Essential", TipoOferta = "Oferta", Stock = 12, Precio = 39.99m },
-                new Producto { Id = 5, Nombre = "Calcetines Nike (Pack 3)", TipoOferta = "Normal", Stock = 30, Precio = 14.99m },
-                new Producto { Id = 6, Nombre = "Shorts Nike Flex", TipoOferta = "Normal", Stock = 18, Precio = 24.99m },
-                new Producto { Id = 7, Nombre = "Mochila Adidas Classic", TipoOferta = "Oferta", Stock = 10, Precio = 34.99m },
-                new Producto { Id = 8, Nombre = "Balón de Fútbol Nike Strike", TipoOferta = "Normal", Stock = 22, Precio = 19.99m },
-                new Producto { Id = 9, Nombre = "Botella de Agua Nike", TipoOferta = "Normal", Stock = 35, Precio = 12.99m },
-                new Producto { Id = 10, Nombre = "Gorra Adidas Baseball", TipoOferta = "Normal", Stock = 28, Precio = 17.99m },
-                new Producto { Id = 11, Nombre = "Banda Elástica Fitness", TipoOferta = "Oferta", Stock = 40, Precio = 9.99m },
-                new Producto { Id = 12, Nombre = "Guantes de Gimnasio", TipoOferta = "Normal", Stock = 15, Precio = 15.99m },
-                new Producto { Id = 13, Nombre = "Esterilla Yoga Premium", TipoOferta = "Oferta", Stock = 20, Precio = 29.99m },
-                new Producto { Id = 14, Nombre = "Rodilleras Deportivas", TipoOferta = "Normal", Stock = 25, Precio = 19.99m },
-                new Producto { Id = 15, Nombre = "Bolsa Deporte Puma", TipoOferta = "Normal", Stock = 17, Precio = 44.99m }
-            };
+            _productos.AddRange([
+                new() { Id = 1, Nombre = "Camiseta Nike Dri-FIT", TipoOferta = "Normal", Stock = 25, Precio = 29.99m },
+                new() { Id = 2, Nombre = "Zapatillas Adidas Running", TipoOferta = "Oferta", Stock = 15, Precio = 89.99m },
+                new() { Id = 3, Nombre = "Pantalón Under Armour", TipoOferta = "Normal", Stock = 20, Precio = 49.99m },
+                new() { Id = 4, Nombre = "Sudadera Puma Essential", TipoOferta = "Oferta", Stock = 12, Precio = 39.99m },
+                new() { Id = 5, Nombre = "Calcetines Nike (Pack 3)", TipoOferta = "Normal", Stock = 30, Precio = 14.99m },
+                new() { Id = 6, Nombre = "Shorts Nike Flex", TipoOferta = "Normal", Stock = 18, Precio = 24.99m },
+                new() { Id = 7, Nombre = "Mochila Adidas Classic", TipoOferta = "Oferta", Stock = 10, Precio = 34.99m },
+                new() { Id = 8, Nombre = "Balón de Fútbol Nike Strike", TipoOferta = "Normal", Stock = 22, Precio = 19.99m },
+                new() { Id = 9, Nombre = "Botella de Agua Nike", TipoOferta = "Normal", Stock = 35, Precio = 12.99m },
+                new() { Id = 10, Nombre = "Gorra Adidas Baseball", TipoOferta = "Normal", Stock = 28, Precio = 17.99m },
+                new() { Id = 11, Nombre = "Banda Elástica Fitness", TipoOferta = "Oferta", Stock = 40, Precio = 9.99m },
+                new() { Id = 12, Nombre = "Guantes de Gimnasio", TipoOferta = "Normal", Stock = 15, Precio = 15.99m },
+                new() { Id = 13, Nombre = "Esterilla Yoga Premium", TipoOferta = "Oferta", Stock = 20, Precio = 29.99m },
+                new() { Id = 14, Nombre = "Rodilleras Deportivas", TipoOferta = "Normal", Stock = 25, Precio = 19.99m },
+                new() { Id = 15, Nombre = "Bolsa Deporte Puma", TipoOferta = "Normal", Stock = 17, Precio = 44.99m }
+            ]);
             GuardarProductos();
         }
 
-        // Cargar carrito del SessionStorage
-        var carritoJson = HttpContext.Session.GetString("carrito");
+        var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
         if (!string.IsNullOrEmpty(carritoJson))
         {
-            _seleccionados = JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new();
+            _seleccionados.Clear();
+            foreach (var item in JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? [])
+            {
+                _seleccionados[item.Key] = item.Value;
+            }
         }
+    }
+
+    public IActionResult OnPostEliminarProducto(int id)
+    {
+        var producto = _productos.FirstOrDefault(p => p.Id == id);
+        if (producto != null)
+        {
+            _productos.Remove(producto);
+            GuardarProductos();
+
+            if (_seleccionados.Remove(id))
+            {
+                GuardarCarrito();
+            }
+
+            TempData["Mensaje"] = $"Producto '{producto.Nombre}' eliminado exitosamente.";
+        }
+
+        return RedirectToPage();
+    }
+
+    public IActionResult OnPost(Dictionary<int, int> cantidades)
+    {
+        if (cantidades?.Count == 0) return RedirectToPage();
+
+        foreach (var (id, cantidad) in cantidades)
+        {
+            if (cantidad <= 0) continue;
+            
+            var producto = _productos.FirstOrDefault(p => p.Id == id);
+            if (producto == null) continue;
+
+            if (_seleccionados.TryGetValue(id, out int cantidadActual))
+            {
+                int cantidadTotal = cantidadActual + cantidad;
+                if (cantidadTotal <= producto.Stock)
+                {
+                    _seleccionados[id] = cantidadTotal;
+                    producto.Stock -= cantidad;
+                }
+                else
+                {
+                    TempData["Error"] = $"No hay suficiente stock para '{producto.Nombre}'";
+                    return RedirectToPage();
+                }
+            }
+            else if (cantidad <= producto.Stock)
+            {
+                _seleccionados[id] = cantidad;
+                producto.Stock -= cantidad;
+            }
+            else
+            {
+                TempData["Error"] = $"No hay suficiente stock para '{producto.Nombre}'";
+                return RedirectToPage();
+            }
+        }
+
+        GuardarProductos();
+        GuardarCarrito();
+        return RedirectToPage("/Carrito");
     }
 
     private void GuardarProductos()
     {
         var productosJson = JsonSerializer.Serialize(_productos);
-        HttpContext.Session.SetString("productos", productosJson);
+        HttpContext.Session.SetString(PRODUCTOS_KEY, productosJson);
     }
 
     private void GuardarCarrito()
     {
         var carritoJson = JsonSerializer.Serialize(_seleccionados);
-        HttpContext.Session.SetString("carrito", carritoJson);
+        HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
     }
 
     public IActionResult OnPostCrearProducto()
@@ -81,50 +147,5 @@ public class GestionProductosModel : PageModel
 
         TempData["Mensaje"] = $"Producto '{NuevoProducto.Nombre}' creado exitosamente.";
         return RedirectToPage();
-    }
-
-    public IActionResult OnPostEliminarProducto(int id)
-    {
-        var producto = _productos.FirstOrDefault(p => p.Id == id);
-        if (producto != null)
-        {
-            _productos.Remove(producto);
-            GuardarProductos();
-
-            // Eliminar del carrito si existe
-            if (_seleccionados.ContainsKey(id))
-            {
-                _seleccionados.Remove(id);
-                GuardarCarrito();
-            }
-
-            TempData["Mensaje"] = $"Producto '{producto.Nombre}' eliminado exitosamente.";
-        }
-
-        return RedirectToPage();
-    }
-
-    public IActionResult OnPost(Dictionary<int, int> cantidades)
-    {
-        foreach (var cantidad in cantidades)
-        {
-            if (cantidad.Value > 0)
-            {
-                var producto = _productos.FirstOrDefault(p => p.Id == cantidad.Key);
-                if (producto != null && cantidad.Value <= producto.Stock)
-                {
-                    producto.Stock -= cantidad.Value;
-
-                    if (_seleccionados.ContainsKey(cantidad.Key))
-                        _seleccionados[cantidad.Key] += cantidad.Value;
-                    else
-                        _seleccionados[cantidad.Key] = cantidad.Value;
-                }
-            }
-        }
-
-        GuardarProductos();
-        GuardarCarrito();
-        return RedirectToPage("/Carrito");
     }
 }
