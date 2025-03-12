@@ -14,164 +14,112 @@
         </div>
     </div>
 
-    @if (TempData["Mensaje"] != null)
+    @if (!string.IsNullOrEmpty(TempData["Mensaje"]?.ToString()))
     {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             <i class="fas fa-check-circle me-2"></i>
             @TempData["Mensaje"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <div class="row">
-        <div class="col-md-8">
-            @if (!Model.ItemsCarrito.Any())
-            {
-                <div class="alert alert-info shadow-sm">
-                    <i class="fas fa-info-circle me-2"></i>
-                    El carrito está vacío. <a href="/GestionProductos" class="alert-link">Ir a comprar</a>
-                </div>
-            }
-            else
-            {
-                <div class="table-responsive shadow-sm rounded">
-                    <table class="table table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Producto</th>
-                                <th>Tipo</th>
-                                <th>Cantidad</th>
-                                <th>Precio Unitario</th>
-                                <th>Subtotal</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.ItemsCarrito)
-                            {
-                                <tr class="align-middle">
-                                    <td class="fw-bold">@item.Producto.Nombre</td>
-                                    <td>
-                                        <span class="badge bg-@(item.Producto.TipoOferta == "Oferta" ? "danger" : "primary")">
-                                            @item.Producto.TipoOferta
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            @item.Cantidad unidades
-                                        </span>
-                                    </td>
-                                    <td class="text-primary fw-bold">@item.Producto.Precio.ToString("C")</td>
-                                    <td class="text-success fw-bold">
-                                        @((item.Producto.Precio * item.Cantidad).ToString("C"))
-                                    </td>
-                                    <td>
-                                        <form method="post" asp-page-handler="EliminarDelCarrito" style="display: inline;">
-                                            <input type="hidden" name="id" value="@item.Producto.Id" />
-                                            <button type="submit" class="btn btn-danger btn-sm" 
-                                                    onclick="return confirm('¿Está seguro de eliminar este producto del carrito?');">
-                                                <i class="fas fa-trash me-1"></i>
-                                                Eliminar
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
+    @if (Model.ItemsCarrito.Any())
+    {
+        <div class="table-responsive shadow-sm">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Tipo</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ItemsCarrito)
+                    {
+                        <tr>
+                            <td data-label="Producto">@item.Producto.Nombre</td>
+                            <td data-label="Tipo">
+                                <span class="badge bg-@(item.Producto.TipoOferta == "Oferta" ? "danger" : "primary")">
+                                    @item.Producto.TipoOferta
+                                </span>
+                            </td>
+                            <td data-label="Precio" class="text-primary fw-bold">
+                                @item.Producto.Precio.ToString("C")
+                            </td>
+                            <td data-label="Cantidad">
+                                <div class="input-group input-group-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-action" 
+                                            onclick="actualizarCantidad(@item.Producto.Id, @(item.Cantidad - 1))">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" 
+                                           id="cantidad-@item.Producto.Id"
+                                           value="@item.Cantidad" 
+                                           class="form-control cantidad-input"
+                                           onchange="actualizarCantidad(@item.Producto.Id, this.value)" />
+                                    <button type="button" class="btn btn-outline-primary btn-action" 
+                                            onclick="actualizarCantidad(@item.Producto.Id, @(item.Cantidad + 1))">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td data-label="Subtotal" class="text-success fw-bold">
+                                @((item.Producto.Precio * item.Cantidad).ToString("C"))
+                            </td>
+                            <td data-label="Acciones">
+                                <form method="post" asp-page-handler="EliminarDelCarrito" class="d-inline">
+                                    <input type="hidden" name="id" value="@item.Producto.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot class="table-dark">
+                    <tr>
+                        <td colspan="6">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <span class="me-3">Total:</span>
+                                <span class="text-success fw-bold">@Model.Total.ToString("C")</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-receipt me-2"></i>
-                        Resumen del Carrito
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="fw-bold">Total Productos:</span>
-                        <span>@Model.ItemsCarrito.Sum(i => i.Cantidad)</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span class="fw-bold">Total a Pagar:</span>
-                        <span class="text-primary fw-bold fs-4">@Model.Total.ToString("C")</span>
-                    </div>
-                </div>
-                <div class="card-footer">
-                    <div class="d-grid gap-2">
-                        <a href="/GestionProductos" class="btn btn-outline-primary">
-                            <i class="fas fa-arrow-left me-2"></i>
-                            Seguir Comprando
-                        </a>
-                        @if (Model.ItemsCarrito.Any())
-                        {
-                            <button type="button" class="btn btn-success">
-                                <i class="fas fa-check me-2"></i>
-                                Proceder al Pago
-                            </button>
-                        }
-                    </div>
-                </div>
-            </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            El carrito está vacío
         </div>
-    </div>
+    }
 </div>
-
-<style>
-    .page-title {
-        color: var(--bs-primary);
-        border-bottom: 3px solid var(--bs-primary);
-        padding-bottom: 0.5rem;
-        margin-bottom: 2rem;
-    }
-
-    .alert {
-        animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateY(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateY(0);
-            opacity: 1;
-        }
-    }
-
-    .card {
-        border: none;
-        border-radius: 0.5rem;
-    }
-
-    .card-header {
-        border-radius: 0.5rem 0.5rem 0 0 !important;
-    }
-
-    .table td {
-        vertical-align: middle;
-    }
-
-    .btn {
-        transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-    }
-</style>
 
 @section Scripts {
     <script>
-        // Auto-ocultar alertas después de 5 segundos
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                $('.alert').fadeOut('slow');
-            }, 5000);
-        });
+        function actualizarCantidad(id, nuevaCantidad) {
+            fetch(`?handler=ActualizarCantidad&id=${id}&cantidad=${nuevaCantidad}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
     </script>
 }

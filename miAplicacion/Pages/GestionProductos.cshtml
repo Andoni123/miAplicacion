@@ -86,8 +86,8 @@
                             </td>
                             <td class="fw-bold text-primary">@producto.Precio.ToString("C")</td>
                             <td style="width: 150px;">
-                                <div class="input-group">
-                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                <div class="input-group input-group-sm">
+                                    <button type="button" class="btn btn-outline-primary btn-action" 
                                             onclick="decrementarCantidad(@producto.Id)">
                                         <i class="fas fa-minus"></i>
                                     </button>
@@ -97,9 +97,9 @@
                                            min="0" 
                                            max="@producto.Stock" 
                                            value="0" 
-                                           class="form-control text-center cantidad-input"
+                                           class="form-control cantidad-input"
                                            onchange="validarCantidad(this, @producto.Stock)" />
-                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                    <button type="button" class="btn btn-outline-primary btn-action" 
                                             onclick="incrementarCantidad(@producto.Id, @producto.Stock)">
                                         <i class="fas fa-plus"></i>
                                     </button>
@@ -216,10 +216,14 @@
                 sinResultados.style.display = hayResultados ? 'none' : 'block';
             });
 
-            // Auto-ocultar alertas después de 5 segundos
-            setTimeout(function() {
-                $('.alert').fadeOut('slow');
-            }, 5000);
+            // Fade out alerts after 5 seconds
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
         });
 
         function eliminarProducto(id, nombre) {
@@ -252,6 +256,3 @@
     </script>
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/carrito.css" />
-}

@@ -16,7 +16,7 @@ public class GestionProductosModel : PageModel
     private readonly List<Producto> _productos = new();
     private readonly Dictionary<int, int> _seleccionados = new();
 
-    public IEnumerable<Producto> Productos => _productos;
+    public IEnumerable<Producto> Productos => _productos.Where(p => p.Stock > 0);
 
     public void OnGet()
     {
@@ -83,6 +83,8 @@ public class GestionProductosModel : PageModel
     {
         if (cantidades?.Count == 0) return RedirectToPage();
 
+        CargarDatos();
+
         foreach (var (id, cantidad) in cantidades)
         {
             if (cantidad <= 0) continue;
@@ -98,21 +100,11 @@ public class GestionProductosModel : PageModel
                     _seleccionados[id] = cantidadTotal;
                     producto.Stock -= cantidad;
                 }
-                else
-                {
-                    TempData["Error"] = $"No hay suficiente stock para '{producto.Nombre}'";
-                    return RedirectToPage();
-                }
             }
             else if (cantidad <= producto.Stock)
             {
                 _seleccionados[id] = cantidad;
                 producto.Stock -= cantidad;
-            }
-            else
-            {
-                TempData["Error"] = $"No hay suficiente stock para '{producto.Nombre}'";
-                return RedirectToPage();
             }
         }
 
@@ -147,5 +139,25 @@ public class GestionProductosModel : PageModel
     {
         var carritoJson = JsonSerializer.Serialize(_seleccionados);
         HttpContext.Session.SetString(CARRITO_KEY, carritoJson);
+    }
+
+    private void CargarDatos()
+    {
+        var productosJson = HttpContext.Session.GetString(PRODUCTOS_KEY);
+        if (!string.IsNullOrEmpty(productosJson))
+        {
+            _productos.Clear();
+            _productos.AddRange(JsonSerializer.Deserialize<List<Producto>>(productosJson) ?? new());
+        }
+
+        var carritoJson = HttpContext.Session.GetString(CARRITO_KEY);
+        if (!string.IsNullOrEmpty(carritoJson))
+        {
+            _seleccionados.Clear();
+            foreach (var item in JsonSerializer.Deserialize<Dictionary<int, int>>(carritoJson) ?? new())
+            {
+                _seleccionados[item.Key] = item.Value;
+            }
+        }
     }
 }
