@@ -9,10 +9,10 @@ public class GestionProductosModel : PageModel
 {
     private const string PRODUCTOS_KEY = "productos";
     private const string CARRITO_KEY = "carrito";
-    
+
     [BindProperty]
     public Producto NuevoProducto { get; set; } = new();
-    
+
     private readonly List<Producto> _productos = new();
     private readonly Dictionary<int, int> _seleccionados = new();
 
@@ -88,7 +88,7 @@ public class GestionProductosModel : PageModel
         foreach (var (id, cantidad) in cantidades)
         {
             if (cantidad <= 0) continue;
-            
+
             var producto = _productos.FirstOrDefault(p => p.Id == id);
             if (producto == null) continue;
 
@@ -123,7 +123,7 @@ public class GestionProductosModel : PageModel
 
         NuevoProducto.Id = _productos.Any() ? _productos.Max(p => p.Id) + 1 : 1;
         _productos.Add(NuevoProducto);
-        
+
         GuardarProductos();
         TempData["Mensaje"] = $"Producto '{NuevoProducto.Nombre}' creado exitosamente.";
         return RedirectToPage();

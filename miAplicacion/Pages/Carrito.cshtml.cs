@@ -11,7 +11,7 @@ public class CarritoModel : PageModel
 {
     private const string PRODUCTOS_KEY = "productos";
     private const string CARRITO_KEY = "carrito";
-    
+
     private List<Producto> _productos = new();
     private Dictionary<int, int> _carrito = new();
 
@@ -35,11 +35,11 @@ public class CarritoModel : PageModel
             {
                 producto.Stock += cantidad; // Devolver al stock
                 _carrito.Remove(id);
-                
+
                 // Guardar los cambios
                 GuardarProductos();
                 GuardarCarrito();
-                
+
                 TempData["Mensaje"] = "Producto eliminado del carrito.";
             }
         }
@@ -51,7 +51,7 @@ public class CarritoModel : PageModel
     {
         CargarDatos();
         var producto = _productos.FirstOrDefault(p => p.Id == id);
-        
+
         if (producto == null)
             return new JsonResult(new { success = false, message = "Producto no encontrado" });
 
@@ -62,13 +62,13 @@ public class CarritoModel : PageModel
         if (_carrito.TryGetValue(id, out int cantidadActual))
         {
             int diferencia = cantidad - cantidadActual;
-            
+
             // Si estamos aumentando la cantidad
             if (diferencia > 0)
             {
                 if (diferencia > producto.Stock)
                     return new JsonResult(new { success = false, message = "No hay suficiente stock" });
-                
+
                 producto.Stock -= diferencia;
             }
             // Si estamos disminuyendo la cantidad
@@ -85,7 +85,7 @@ public class CarritoModel : PageModel
 
         GuardarProductos();
         GuardarCarrito();
-        
+
         return new JsonResult(new { success = true });
     }
 
