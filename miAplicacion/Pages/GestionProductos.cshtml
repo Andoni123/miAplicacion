@@ -5,134 +5,187 @@
 }
 
 <div class="container mt-4">
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center">
         <div class="col-md-6">
-            <h2>Productos Disponibles</h2>
+            <h2 class="page-title">
+                <i class="fas fa-box-open me-2"></i>
+                Productos Disponibles
+            </h2>
         </div>
         <div class="col-md-6 text-end">
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#crearProductoModal">
-                <i class="fas fa-plus"></i> Nuevo Producto
+            <button type="button" class="btn btn-success btn-lg shadow-sm" data-bs-toggle="modal" data-bs-target="#crearProductoModal">
+                <i class="fas fa-plus me-2"></i> Nuevo Producto
             </button>
         </div>
     </div>
 
-    <!-- Buscador -->
+    <!-- Buscador mejorado -->
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="input-group">
-                <input type="text" 
-                       class="form-control" 
-                       id="buscador" 
-                       placeholder="Buscar producto..." 
-                       autocomplete="off">
-                <span class="input-group-text">
-                    <i class="fas fa-search"></i>
-                </span>
+            <div class="search-container">
+                <div class="input-group input-group-lg shadow-sm">
+                    <span class="input-group-text bg-primary text-white">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control form-control-lg search-input" 
+                           id="buscador" 
+                           placeholder="Buscar producto por nombre..." 
+                           autocomplete="off">
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Alertas con animación -->
     @if (TempData["Error"] != null)
     {
-        <div class="alert alert-danger">
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
             @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
     @if (TempData["Mensaje"] != null)
     {
-        <div class="alert alert-success">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
             @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <form method="post">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Tipo de Oferta</th>
-                    <th>Stock</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaProductos">
-                @foreach (var producto in Model.Productos)
-                {
-                    <tr class="fila-producto">
-                        <td>@producto.Nombre</td>
-                        <td>@producto.TipoOferta</td>
-                        <td>@producto.Stock</td>
-                        <td>@producto.Precio.ToString("C")</td>
-                        <td style="width: 150px;">
-                            <input type="number" class="form-control" 
-                                   name="cantidades[@producto.Id]" 
-                                   min="0" 
-                                   max="@producto.Stock" 
-                                   value="0" />
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                                <form method="post" asp-page-handler="EliminarProducto" 
-                                      style="display: inline;">
-                                    <input type="hidden" name="id" value="@producto.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm" 
-                                            onclick="return confirm('¿Está seguro de eliminar este producto?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
+    <form method="post" id="formCarrito">
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Tipo</th>
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var producto in Model.Productos)
+                    {
+                        <tr class="fila-producto align-middle">
+                            <td class="fw-bold">@producto.Nombre</td>
+                            <td>
+                                <span class="badge bg-@(producto.TipoOferta == "Oferta" ? "danger" : "primary")">
+                                    @producto.TipoOferta
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-@(producto.Stock < 10 ? "warning" : "success")">
+                                    @producto.Stock unidades
+                                </span>
+                            </td>
+                            <td class="fw-bold text-primary">@producto.Precio.ToString("C")</td>
+                            <td style="width: 150px;">
+                                <div class="input-group">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="decrementarCantidad(@producto.Id)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" 
+                                           id="cantidad-@producto.Id"
+                                           name="cantidades[@producto.Id]" 
+                                           min="0" 
+                                           max="@producto.Stock" 
+                                           value="0" 
+                                           class="form-control text-center cantidad-input"
+                                           onchange="validarCantidad(this, @producto.Stock)" />
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="incrementarCantidad(@producto.Id, @producto.Stock)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" 
+                                        class="btn btn-danger btn-sm"
+                                        onclick="eliminarProducto(@producto.Id, '@producto.Nombre')">
+                                    <i class="fas fa-trash me-1"></i>
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                <i class="fas fa-shopping-cart me-2"></i>
+                Agregar al Carrito
+            </button>
+        </div>
+    </form>
+
+    <!-- Formulario oculto para eliminar productos -->
+    <form id="formEliminar" method="post" asp-page-handler="EliminarProducto" style="display:none;">
+        <input type="hidden" id="idProductoEliminar" name="id" value="" />
     </form>
 
     <!-- Mensaje cuando no hay resultados -->
-    <div id="sinResultados" class="alert alert-info" style="display: none;">
+    <div id="sinResultados" class="alert alert-info shadow-sm" style="display: none;">
+        <i class="fas fa-info-circle me-2"></i>
         No se encontraron productos que coincidan con la búsqueda.
     </div>
 </div>
 
-<!-- Modal para crear nuevo producto -->
+<!-- Modal mejorado para crear nuevo producto -->
 <div class="modal fade" id="crearProductoModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="post" asp-page-handler="CrearProducto">
-                <div class="modal-header">
-                    <h5 class="modal-title">Crear Nuevo Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Crear Nuevo Producto
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" class="form-control" asp-for="NuevoProducto.Nombre" required />
+                        <label class="form-label">
+                            <i class="fas fa-tag me-2"></i>Nombre
+                        </label>
+                        <input type="text" class="form-control form-control-lg" asp-for="NuevoProducto.Nombre" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Tipo de Oferta</label>
-                        <select class="form-select" asp-for="NuevoProducto.TipoOferta" required>
+                        <label class="form-label">
+                            <i class="fas fa-percentage me-2"></i>Tipo de Oferta
+                        </label>
+                        <select class="form-select form-select-lg" asp-for="NuevoProducto.TipoOferta" required>
                             <option value="Normal">Normal</option>
                             <option value="Oferta">Oferta</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Stock</label>
-                        <input type="number" class="form-control" asp-for="NuevoProducto.Stock" min="0" required />
+                        <label class="form-label">
+                            <i class="fas fa-boxes me-2"></i>Stock
+                        </label>
+                        <input type="number" class="form-control form-control-lg" asp-for="NuevoProducto.Stock" min="0" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Precio</label>
-                        <input type="number" class="form-control" asp-for="NuevoProducto.Precio" min="0.01" step="0.01" required />
+                        <label class="form-label">
+                            <i class="fas fa-euro-sign me-2"></i>Precio
+                        </label>
+                        <input type="number" class="form-control form-control-lg" asp-for="NuevoProducto.Precio" min="0.01" step="0.01" required />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Crear Producto</button>
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-save me-2"></i>Crear Producto
+                    </button>
                 </div>
             </form>
         </div>
@@ -160,9 +213,45 @@
                     }
                 });
 
-                // Mostrar/ocultar mensaje de "sin resultados"
                 sinResultados.style.display = hayResultados ? 'none' : 'block';
             });
+
+            // Auto-ocultar alertas después de 5 segundos
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
         });
+
+        function eliminarProducto(id, nombre) {
+            if (confirm(`¿Está seguro de eliminar el producto "${nombre}"?`)) {
+                document.getElementById('idProductoEliminar').value = id;
+                document.getElementById('formEliminar').submit();
+            }
+        }
+
+        function decrementarCantidad(id) {
+            const input = document.getElementById(`cantidad-${id}`);
+            if (input.value > 0) {
+                input.value = parseInt(input.value) - 1;
+                input.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function incrementarCantidad(id, maxStock) {
+            const input = document.getElementById(`cantidad-${id}`);
+            if (parseInt(input.value) < maxStock) {
+                input.value = parseInt(input.value) + 1;
+                input.dispatchEvent(new Event('change'));
+            }
+        }
+
+        function validarCantidad(input, maxStock) {
+            if (input.value < 0) input.value = 0;
+            if (input.value > maxStock) input.value = maxStock;
+        }
     </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/carrito.css" />
 }

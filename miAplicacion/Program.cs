@@ -1,6 +1,6 @@
 var builder = WebApplication.CreateBuilder(args);
 
-// Agregar servicios al contenedor.
+// Agregar servicios al contenedor
 builder.Services.AddRazorPages();
 builder.Services.AddSession(options =>
 {
